@@ -1,0 +1,1434 @@
+<?php include 'db_connect.php'; ?>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Student Task and Assignment Tracker</title>
+    <style>
+        /* Global Styles */
+        :root {
+            --primary: #4361ee;
+            --secondary: #3f37c9;
+            --accent: #4cc9f0;
+            --light: #f8f9fa;
+            --dark: #212529;
+            --success: #4bb543;
+            --warning: #ffcc00;
+            --danger: #dc3545;
+            --gray: #6c757d;
+            --light-gray: #e9ecef;
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        body {
+            background-color: #f5f7fb;
+            color: var(--dark);
+            line-height: 1.6;
+        }
+        
+        .container {
+            width: 100%;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 20px;
+        }
+        
+        /* Header Styles */
+        header {
+            background-color: white;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+        
+        .header-container {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 15px 0;
+        }
+        
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-weight: 700;
+            font-size: 1.5rem;
+            color: var(--primary);
+        }
+        
+        .logo-icon {
+            background-color: var(--primary);
+            color: white;
+            width: 40px;
+            height: 40px;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        nav ul {
+            display: flex;
+            list-style: none;
+            gap: 25px;
+        }
+        
+        nav a {
+            text-decoration: none;
+            color: var(--dark);
+            font-weight: 500;
+            padding: 8px 12px;
+            border-radius: 6px;
+            transition: all 0.3s ease;
+        }
+        
+        nav a:hover, nav a.active {
+            background-color: var(--light-gray);
+            color: var(--primary);
+        }
+        
+        .user-actions {
+            display: flex;
+            gap: 15px;
+        }
+        
+        .btn {
+            padding: 8px 16px;
+            border-radius: 6px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border: none;
+        }
+        
+        .btn-primary {
+            background-color: var(--primary);
+            color: white;
+        }
+        
+        .btn-primary:hover {
+            background-color: var(--secondary);
+        }
+        
+        .btn-outline {
+            background-color: transparent;
+            border: 1px solid var(--primary);
+            color: var(--primary);
+        }
+        
+        .btn-outline:hover {
+            background-color: var(--light-gray);
+        }
+        
+        /* Main Content Styles */
+        main {
+            padding: 30px 0;
+            min-height: calc(100vh - 140px);
+        }
+        
+        .page {
+            display: none;
+        }
+        
+        .page.active {
+            display: block;
+        }
+        
+        .page-header {
+            margin-bottom: 30px;
+        }
+        
+        .page-title {
+            font-size: 2rem;
+            margin-bottom: 10px;
+            color: var(--dark);
+        }
+        
+        .page-description {
+            color: var(--gray);
+            font-size: 1.1rem;
+        }
+        
+        /* Dashboard Styles */
+        .stats-cards {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+        
+        .stat-card {
+            background-color: white;
+            border-radius: 10px;
+            padding: 20px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .stat-card-icon {
+            width: 50px;
+            height: 50px;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 15px;
+            font-size: 1.5rem;
+        }
+        
+        .stat-card-icon.primary {
+            background-color: rgba(67, 97, 238, 0.1);
+            color: var(--primary);
+        }
+        
+        .stat-card-icon.warning {
+            background-color: rgba(255, 204, 0, 0.1);
+            color: var(--warning);
+        }
+        
+        .stat-card-icon.danger {
+            background-color: rgba(220, 53, 69, 0.1);
+            color: var(--danger);
+        }
+        
+        .stat-card-icon.success {
+            background-color: rgba(75, 181, 67, 0.1);
+            color: var(--success);
+        }
+        
+        .stat-card-value {
+            font-size: 2rem;
+            font-weight: 700;
+            margin-bottom: 5px;
+        }
+        
+        .stat-card-label {
+            color: var(--gray);
+            font-size: 0.9rem;
+        }
+        
+        .dashboard-sections {
+            display: grid;
+            grid-template-columns: 2fr 1fr;
+            gap: 30px;
+        }
+        
+        .dashboard-card {
+            background-color: white;
+            border-radius: 10px;
+            padding: 25px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+        }
+        
+        .card-header {
+            display: flex;
+            justify-content: between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+        
+        .card-title {
+            font-size: 1.3rem;
+            font-weight: 600;
+        }
+        
+        .card-actions {
+            display: flex;
+            gap: 10px;
+        }
+        
+        .task-list {
+            list-style: none;
+        }
+        
+        .task-item {
+            padding: 15px 0;
+            border-bottom: 1px solid var(--light-gray);
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+        
+        .task-item:last-child {
+            border-bottom: none;
+        }
+        
+        .task-checkbox {
+            width: 20px;
+            height: 20px;
+            border-radius: 4px;
+            border: 2px solid var(--light-gray);
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .task-checkbox.checked {
+            background-color: var(--primary);
+            border-color: var(--primary);
+            color: white;
+        }
+        
+        .task-info {
+            flex: 1;
+        }
+        
+        .task-title {
+            font-weight: 500;
+            margin-bottom: 5px;
+        }
+        
+        .task-meta {
+            display: flex;
+            gap: 15px;
+            font-size: 0.85rem;
+            color: var(--gray);
+        }
+        
+        .task-priority {
+            padding: 3px 8px;
+            border-radius: 20px;
+            font-size: 0.75rem;
+            font-weight: 500;
+        }
+        
+        .priority-high {
+            background-color: rgba(220, 53, 69, 0.1);
+            color: var(--danger);
+        }
+        
+        .priority-medium {
+            background-color: rgba(255, 204, 0, 0.1);
+            color: var(--warning);
+        }
+        
+        .priority-low {
+            background-color: rgba(75, 181, 67, 0.1);
+            color: var(--success);
+        }
+        
+        /* Tasks Page Styles */
+        .tasks-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 25px;
+        }
+        
+        .filters {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 25px;
+        }
+        
+        .filter-btn {
+            padding: 8px 16px;
+            border-radius: 20px;
+            background-color: white;
+            border: 1px solid var(--light-gray);
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .filter-btn.active {
+            background-color: var(--primary);
+            color: white;
+            border-color: var(--primary);
+        }
+        
+        .tasks-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 20px;
+        }
+        
+        .task-card {
+            background-color: white;
+            border-radius: 10px;
+            padding: 20px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+            border-left: 4px solid var(--primary);
+        }
+        
+        .task-card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 15px;
+        }
+        
+        .task-card-title {
+            font-weight: 600;
+            font-size: 1.1rem;
+            margin-bottom: 5px;
+        }
+        
+        .task-card-course {
+            font-size: 0.85rem;
+            color: var(--gray);
+        }
+        
+        .task-card-due {
+            font-size: 0.85rem;
+            color: var(--danger);
+            font-weight: 500;
+        }
+        
+        .task-card-description {
+            margin-bottom: 15px;
+            color: var(--gray);
+            font-size: 0.9rem;
+        }
+        
+        .task-card-footer {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .task-card-actions {
+            display: flex;
+            gap: 10px;
+        }
+        
+        .action-btn {
+            width: 30px;
+            height: 30px;
+            border-radius: 6px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background-color: var(--light-gray);
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .action-btn:hover {
+            background-color: var(--primary);
+            color: white;
+        }
+        
+        /* Calendar Styles */
+        .calendar-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 25px;
+        }
+        
+        .calendar-nav {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+        
+        .calendar-grid {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            gap: 1px;
+            background-color: var(--light-gray);
+            border: 1px solid var(--light-gray);
+            border-radius: 10px;
+            overflow: hidden;
+        }
+        
+        .calendar-day-header {
+            background-color: var(--light-gray);
+            padding: 15px 10px;
+            text-align: center;
+            font-weight: 600;
+        }
+        
+        .calendar-day {
+            background-color: white;
+            padding: 10px;
+            min-height: 120px;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .calendar-day.other-month {
+            background-color: #f8f9fa;
+            color: var(--gray);
+        }
+        
+        .day-number {
+            font-weight: 600;
+            margin-bottom: 5px;
+        }
+        
+        .calendar-event {
+            background-color: rgba(67, 97, 238, 0.1);
+            border-left: 3px solid var(--primary);
+            padding: 5px 8px;
+            margin-top: 5px;
+            border-radius: 4px;
+            font-size: 0.8rem;
+            cursor: pointer;
+        }
+        
+        .calendar-event.urgent {
+            background-color: rgba(220, 53, 69, 0.1);
+            border-left-color: var(--danger);
+        }
+        
+        /* Profile Styles */
+        .profile-container {
+            display: grid;
+            grid-template-columns: 1fr 2fr;
+            gap: 30px;
+        }
+        
+        .profile-sidebar {
+            background-color: white;
+            border-radius: 10px;
+            padding: 25px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+            text-align: center;
+        }
+        
+        .profile-avatar {
+            width: 120px;
+            height: 120px;
+            border-radius: 50%;
+            background-color: var(--light-gray);
+            margin: 0 auto 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2.5rem;
+            color: var(--gray);
+        }
+        
+        .profile-name {
+            font-size: 1.5rem;
+            font-weight: 600;
+            margin-bottom: 5px;
+        }
+        
+        .profile-role {
+            color: var(--gray);
+            margin-bottom: 20px;
+        }
+        
+        .profile-stats {
+            display: flex;
+            justify-content: space-around;
+            margin: 25px 0;
+        }
+        
+        .profile-stat {
+            text-align: center;
+        }
+        
+        .profile-stat-value {
+            font-size: 1.5rem;
+            font-weight: 700;
+            margin-bottom: 5px;
+        }
+        
+        .profile-stat-label {
+            font-size: 0.85rem;
+            color: var(--gray);
+        }
+        
+        .profile-content {
+            background-color: white;
+            border-radius: 10px;
+            padding: 25px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+        }
+        
+        .profile-tabs {
+            display: flex;
+            border-bottom: 1px solid var(--light-gray);
+            margin-bottom: 25px;
+        }
+        
+        .profile-tab {
+            padding: 12px 20px;
+            cursor: pointer;
+            border-bottom: 2px solid transparent;
+            transition: all 0.3s ease;
+        }
+        
+        .profile-tab.active {
+            border-bottom-color: var(--primary);
+            color: var(--primary);
+            font-weight: 500;
+        }
+        
+        .form-group {
+            margin-bottom: 20px;
+        }
+        
+        .form-label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 500;
+        }
+        
+        .form-control {
+            width: 100%;
+            padding: 10px 15px;
+            border: 1px solid var(--light-gray);
+            border-radius: 6px;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+        }
+        
+        .form-control:focus {
+            border-color: var(--primary);
+            outline: none;
+            box-shadow: 0 0 0 3px rgba(67, 97, 238, 0.1);
+        }
+        
+        /* Admin Styles */
+        .admin-container {
+            display: grid;
+            grid-template-columns: 250px 1fr;
+            gap: 30px;
+        }
+        
+        .admin-sidebar {
+            background-color: white;
+            border-radius: 10px;
+            padding: 20px 0;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+        }
+        
+        .admin-nav {
+            list-style: none;
+        }
+        
+        .admin-nav-item {
+            padding: 12px 25px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .admin-nav-item:hover, .admin-nav-item.active {
+            background-color: rgba(67, 97, 238, 0.1);
+            color: var(--primary);
+            border-right: 3px solid var(--primary);
+        }
+        
+        .admin-content {
+            background-color: white;
+            border-radius: 10px;
+            padding: 25px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+        }
+        
+        .table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        
+        .table th, .table td {
+            padding: 12px 15px;
+            text-align: left;
+            border-bottom: 1px solid var(--light-gray);
+        }
+        
+        .table th {
+            background-color: var(--light-gray);
+            font-weight: 600;
+        }
+        
+        .status-badge {
+            padding: 5px 10px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 500;
+        }
+        
+        .status-active {
+            background-color: rgba(75, 181, 67, 0.1);
+            color: var(--success);
+        }
+        
+        .status-inactive {
+            background-color: rgba(108, 117, 125, 0.1);
+            color: var(--gray);
+        }
+        
+        /* About Styles */
+        .about-container {
+            background-color: white;
+            border-radius: 10px;
+            padding: 30px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+        }
+        
+        .about-section {
+            margin-bottom: 30px;
+        }
+        
+        .about-section:last-child {
+            margin-bottom: 0;
+        }
+        
+        .about-section-title {
+            font-size: 1.5rem;
+            margin-bottom: 15px;
+            color: var(--primary);
+        }
+        
+        .team-members {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 20px;
+        }
+        
+        .team-member {
+            text-align: center;
+            padding: 20px;
+            border-radius: 10px;
+            background-color: var(--light);
+            transition: all 0.3s ease;
+        }
+        
+        .team-member:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+        }
+        
+        .member-avatar {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            background-color: var(--light-gray);
+            margin: 0 auto 15px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            color: var(--gray);
+        }
+        
+        .member-name {
+            font-weight: 600;
+            margin-bottom: 5px;
+        }
+        
+        .member-role {
+            color: var(--gray);
+            font-size: 0.9rem;
+        }
+        
+        /* Footer Styles */
+        footer {
+            background-color: var(--dark);
+            color: white;
+            padding: 30px 0;
+        }
+        
+        .footer-container {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .footer-links {
+            display: flex;
+            gap: 20px;
+        }
+        
+        .footer-links a {
+            color: white;
+            text-decoration: none;
+            transition: all 0.3s ease;
+        }
+        
+        .footer-links a:hover {
+            color: var(--accent);
+        }
+        
+        .copyright {
+            color: var(--light-gray);
+            font-size: 0.9rem;
+        }
+        
+        /* Responsive Styles */
+        @media (max-width: 992px) {
+            .dashboard-sections {
+                grid-template-columns: 1fr;
+            }
+            
+            .profile-container {
+                grid-template-columns: 1fr;
+            }
+            
+            .admin-container {
+                grid-template-columns: 1fr;
+            }
+            
+            .admin-sidebar {
+
+                display: none;
+            }
+        }
+        
+        @media (max-width: 768px) {
+            .header-container {
+                flex-direction: column;
+                gap: 15px;
+            }
+            
+            nav ul {
+                flex-wrap: wrap;
+                justify-content: center;
+            }
+            
+            .user-actions {
+                width: 100%;
+                justify-content: center;
+            }
+            
+            .stats-cards {
+                grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            }
+            
+            .tasks-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .calendar-grid {
+                grid-template-columns: repeat(7, 1fr);
+                font-size: 0.8rem;
+            }
+            
+            .calendar-day {
+                min-height: 80px;
+                padding: 5px;
+            }
+            
+            .footer-container {
+                flex-direction: column;
+                gap: 20px;
+                text-align: center;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Header -->
+    <header>
+        <div class="container header-container">
+            <div class="logo">
+                <div class="logo-icon">ST</div>
+                <span>Student Tracker</span>
+            </div>
+            <nav>
+                <ul>
+                    <li><a href="#" class="nav-link active" data-page="home">Home</a></li>
+                    <li><a href="#" class="nav-link" data-page="dashboard">Dashboard</a></li>
+                   
+                    
+                    <li><a href="#" class="nav-link" data-page="profile">Profile</a></li>
+                    <li><a href="#" class="nav-link" data-page="admin">Admin</a></li>
+                    <li><a href="#" class="nav-link" data-page="about">About</a></li>
+                </ul>
+            </nav>
+           
+			<div class="user-actions">
+				<a href="login.php" class="btn btn-outline">Login</a>
+				<a href="register.php" class="btn btn-primary">Sign Up</a>
+			</div>
+
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main>
+        <div class="container">
+            <!-- Home Page -->
+            <section id="home" class="page active">
+                <div class="page-header">
+                    <h1 class="page-title">Student Task and Assignment Tracker</h1>
+                    <p class="page-description">Organize your assignments, track deadlines, and boost your productivity</p>
+                </div>
+                
+                <div class="stats-cards">
+                    <div class="stat-card">
+                        <div class="stat-card-icon primary">
+                            <i>📚</i>
+                        </div>
+                        <div class="stat-card-value">12</div>
+                        <div class="stat-card-label">Active Tasks</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-card-icon warning">
+                            <i>⏰</i>
+                        </div>
+                        <div class="stat-card-value">3</div>
+                        <div class="stat-card-label">Due This Week</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-card-icon danger">
+                            <i>🚨</i>
+                        </div>
+                        <div class="stat-card-value">1</div>
+                        <div class="stat-card-label">Overdue</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-card-icon success">
+                            <i>✅</i>
+                        </div>
+                        <div class="stat-card-value">24</div>
+                        <div class="stat-card-label">Completed</div>
+                    </div>
+                </div>
+                
+                <div class="dashboard-sections">
+                    <div class="dashboard-card">
+                        <div class="card-header">
+                            <h2 class="card-title">Upcoming Deadlines</h2>
+                            <div class="card-actions">
+                                <button class="btn btn-outline">View All</button>
+                            </div>
+                        </div>
+                        <ul class="task-list">
+                            <li class="task-item">
+                                <div class="task-checkbox"></div>
+                                <div class="task-info">
+                                    <div class="task-title">Research Paper - Web Development</div>
+                                    <div class="task-meta">
+                                        <span>Due: Oct 15, 2025</span>
+                                        <span class="task-priority priority-high">High</span>
+                                    </div>
+                                </div>
+                            </li>
+                            <li class="task-item">
+                                <div class="task-checkbox"></div>
+                                <div class="task-info">
+                                    <div class="task-title">Math Assignment - Calculus</div>
+                                    <div class="task-meta">
+                                        <span>Due: Oct 18, 2025</span>
+                                        <span class="task-priority priority-medium">Medium</span>
+                                    </div>
+                                </div>
+                            </li>
+                            <li class="task-item">
+                                <div class="task-checkbox"></div>
+                                <div class="task-info">
+                                    <div class="task-title">Group Project Presentation</div>
+                                    <div class="task-meta">
+                                        <span>Due: Oct 22, 2025</span>
+                                        <span class="task-priority priority-high">High</span>
+                                    </div>
+                                </div>
+                            </li>
+                        </ul>
+                    </div>
+                    
+                    <div class="dashboard-card">
+                        <div class="card-header">
+                            <h2 class="card-title">Quick Actions</h2>
+                        </div>
+                        <div style="display: flex; flex-direction: column; gap: 15px;">
+                            <button class="btn btn-primary" onclick="window.location.href='add_task.php'">
+    						Add New Task
+							</button>
+                            
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Dashboard Page -->
+            <section id="dashboard" class="page">
+                <div class="page-header">
+                    <h1 class="page-title">Dashboard</h1>
+                    <p class="page-description">Overview of your tasks, progress, and upcoming deadlines</p>
+                </div>
+                <!-- Content would be similar to home but more detailed -->
+                <p>Dashboard content would go here with more detailed statistics and charts.</p>
+            </section>
+
+            <!-- Tasks Page -->
+            <section id="tasks" class="page">
+                <div class="page-header">
+                    <h1 class="page-title">My Tasks</h1>
+                    <p class="page-description">Manage all your assignments and projects in one place</p>
+                </div>
+                
+                <div class="tasks-header">
+                    <button class="btn btn-primary">Add New Task</button>
+                    <div class="filters">
+                        <button class="filter-btn active">All</button>
+                        <button class="filter-btn">Pending</button>
+                        <button class="filter-btn">Completed</button>
+                        <button class="filter-btn">Overdue</button>
+                    </div>
+                </div>
+                
+                <div class="tasks-grid">
+                    <div class="task-card">
+                        <div class="task-card-header">
+                            <div>
+                                <div class="task-card-title">Research Paper - Web Development</div>
+                                <div class="task-card-course">SWC3623 - Web Application Development</div>
+                            </div>
+                            <div class="task-card-due">Oct 15, 2025</div>
+                        </div>
+                        <div class="task-card-description">
+                            Write a 10-page research paper on modern web development frameworks and their impact on productivity.
+                        </div>
+                        <div class="task-card-footer">
+                            <span class="task-priority priority-high">High Priority</span>
+                            <div class="task-card-actions">
+                                <div class="action-btn">✏️</div>
+                                <div class="action-btn">🗑️</div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="task-card">
+                        <div class="task-card-header">
+                            <div>
+                                <div class="task-card-title">Math Assignment - Calculus</div>
+                                <div class="task-card-course">MAT101 - Calculus I</div>
+                            </div>
+                            <div class="task-card-due">Oct 18, 2025</div>
+                        </div>
+                        <div class="task-card-description">
+                            Complete problems from chapters 3 and 4 on derivatives and applications.
+                        </div>
+                        <div class="task-card-footer">
+                            <span class="task-priority priority-medium">Medium Priority</span>
+                            <div class="task-card-actions">
+                                <div class="action-btn">✏️</div>
+                                <div class="action-btn">🗑️</div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="task-card">
+                        <div class="task-card-header">
+                            <div>
+                                <div class="task-card-title">Group Project Presentation</div>
+                                <div class="task-card-course">SWC3623 - Web Application Development</div>
+                            </div>
+                            <div class="task-card-due">Oct 22, 2025</div>
+                        </div>
+                        <div class="task-card-description">
+                            Prepare a 15-minute presentation on our student task tracker project.
+                        </div>
+                        <div class="task-card-footer">
+                            <span class="task-priority priority-high">High Priority</span>
+                            <div class="task-card-actions">
+                                <div class="action-btn">✏️</div>
+                                <div class="action-btn">🗑️</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Calendar Page -->
+            <section id="calendar" class="page">
+                <div class="page-header">
+                    <h1 class="page-title">Calendar</h1>
+                    <p class="page-description">View your schedule and deadlines in calendar format</p>
+                </div>
+                
+                <div class="calendar-header">
+                    <h2>October 2025</h2>
+                    <div class="calendar-nav">
+                        <button class="btn btn-outline">‹ Previous</button>
+                        <button class="btn btn-outline">Today</button>
+                        <button class="btn btn-outline">Next ›</button>
+                    </div>
+                </div>
+                
+                <div class="calendar-grid">
+                    <div class="calendar-day-header">Sun</div>
+                    <div class="calendar-day-header">Mon</div>
+                    <div class="calendar-day-header">Tue</div>
+                    <div class="calendar-day-header">Wed</div>
+                    <div class="calendar-day-header">Thu</div>
+                    <div class="calendar-day-header">Fri</div>
+                    <div class="calendar-day-header">Sat</div>
+                    
+                    <!-- Previous month days -->
+                    <div class="calendar-day other-month">28</div>
+                    <div class="calendar-day other-month">29</div>
+                    <div class="calendar-day other-month">30</div>
+                    <div class="calendar-day">1</div>
+                    <div class="calendar-day">2</div>
+                    <div class="calendar-day">3</div>
+                    <div class="calendar-day">4</div>
+                    
+                    <!-- Current month days -->
+                    <div class="calendar-day">5</div>
+                    <div class="calendar-day">6</div>
+                    <div class="calendar-day">7</div>
+                    <div class="calendar-day">8</div>
+                    <div class="calendar-day">9</div>
+                    <div class="calendar-day">10</div>
+                    <div class="calendar-day">11</div>
+                    
+                    <div class="calendar-day">12</div>
+                    <div class="calendar-day">13</div>
+                    <div class="calendar-day">14</div>
+                    <div class="calendar-day">
+                        <div class="day-number">15</div>
+                        <div class="calendar-event urgent">Research Paper Due</div>
+                    </div>
+                    <div class="calendar-day">16</div>
+                    <div class="calendar-day">17</div>
+                    <div class="calendar-day">
+                        <div class="day-number">18</div>
+                        <div class="calendar-event">Math Assignment Due</div>
+                    </div>
+                    
+                    <div class="calendar-day">19</div>
+                    <div class="calendar-day">20</div>
+                    <div class="calendar-day">21</div>
+                    <div class="calendar-day">
+                        <div class="day-number">22</div>
+                        <div class="calendar-event urgent">Group Presentation</div>
+                    </div>
+                    <div class="calendar-day">23</div>
+                    <div class="calendar-day">24</div>
+                    <div class="calendar-day">25</div>
+                    
+                    <div class="calendar-day">26</div>
+                    <div class="calendar-day">27</div>
+                    <div class="calendar-day">28</div>
+                    <div class="calendar-day">29</div>
+                    <div class="calendar-day">30</div>
+                    <div class="calendar-day">31</div>
+                    <!-- Next month days -->
+                    <div class="calendar-day other-month">1</div>
+                </div>
+            </section>
+
+            <!-- Profile Page -->
+            <section id="profile" class="page">
+                <div class="page-header">
+                    <h1 class="page-title">My Profile</h1>
+                    <p class="page-description">Manage your account settings and preferences</p>
+                </div>
+                
+                <div class="profile-container">
+                    <div class="profile-sidebar">
+                        <div class="profile-avatar">IZ</div>
+                        <div class="profile-name">Iskandar Zulqarnain</div>
+                        <div class="profile-role">Student</div>
+                        
+                        <div class="profile-stats">
+                            <div class="profile-stat">
+                                <div class="profile-stat-value">12</div>
+                                <div class="profile-stat-label">Tasks</div>
+                            </div>
+                            <div class="profile-stat">
+                                <div class="profile-stat-value">24</div>
+                                <div class="profile-stat-label">Completed</div>
+                            </div>
+                            <div class="profile-stat">
+                                <div class="profile-stat-value">85%</div>
+                                <div class="profile-stat-label">Progress</div>
+                            </div>
+                        </div>
+                        
+                        <button class="btn btn-primary" style="width: 100%;">Edit Profile</button>
+                    </div>
+                    
+                    <div class="profile-content">
+                        <div class="profile-tabs">
+                            <div class="profile-tab active">Personal Info</div>
+                            
+                        </div>
+                        
+                        <form>
+                            <div class="form-group">
+                                <label class="form-label">Full Name</label>
+                                <input type="text" class="form-control" value="Iskandar Zulqarnain Bin Affendy">
+                            </div>
+                            
+                            <div class="form-group">
+                                <label class="form-label">Student ID</label>
+                                <input type="text" class="form-control" value="AM2408016624">
+                            </div>
+                            
+                            <div class="form-group">
+                                <label class="form-label">Email</label>
+                                <input type="email" class="form-control" value="iskandar@student.edu">
+                            </div>
+                            
+                            <div class="form-group">
+                                <label class="form-label">Phone Number</label>
+                                <input type="tel" class="form-control" value="+60 12-345 6789">
+                            </div>
+                            
+                            <div class="form-group">
+                                <label class="form-label">Faculty</label>
+                                <input type="text" class="form-control" value="Faculty of Computer Science and Information Technology">
+                            </div>
+                            
+                            <div class="form-group">
+                                <label class="form-label">Program</label>
+                                <input type="text" class="form-control" value="Bachelor of Computer Science (Software Engineering) with Honours">
+                            </div>
+                            
+                           
+                        </form>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Admin Page -->
+            <section id="admin" class="page">
+                <div class="page-header">
+                    <h1 class="page-title">Admin Panel</h1>
+                    <p class="page-description">Manage users, courses, and system settings</p>
+                </div>
+                
+                <div class="admin-container">
+                    <div class="admin-sidebar">
+                        <ul class="admin-nav">
+                            
+                            <li class="admin-nav-item">User Management</li>
+                           
+                            
+                            <li class="admin-nav-item">Reports</li>
+                           
+                        </ul>
+                    </div>
+                    
+                    <div class="admin-content">
+                        <h2>User Management</h2>
+                        <table class="table">
+                            <thead>
+                                <tr>
+                                    <th>Name</th>
+                                    <th>Student ID</th>
+                                    <th>Email</th>
+                                    <th>Faculty</th>
+                                    <th>Status</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td>Iskandar Zulqarnain</td>
+                                    <td>AM2408016624</td>
+                                    <td>iskandar@student.edu</td>
+                                    <td>Computer Science</td>
+                                    <td><span class="status-badge status-active">Active</span></td>
+                                    <td>
+                                        <div class="task-card-actions">
+                                            <div class="action-btn">✏️</div>
+                                            <div class="action-btn">🗑️</div>
+                                        </div>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>Ahmad Farhan</td>
+                                    <td>AM2408016625</td>
+                                    <td>ahmad@student.edu</td>
+                                    <td>Computer Science</td>
+                                    <td><span class="status-badge status-active">Active</span></td>
+                                    <td>
+                                        <div class="task-card-actions">
+                                            <div class="action-btn">✏️</div>
+                                            <div class="action-btn">🗑️</div>
+                                        </div>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>Siti Nurhaliza</td>
+                                    <td>AM2408016626</td>
+                                    <td>siti@student.edu</td>
+                                    <td>Information Technology</td>
+                                    <td><span class="status-badge status-inactive">Inactive</span></td>
+                                    <td>
+                                        <div class="task-card-actions">
+                                            <div class="action-btn">✏️</div>
+                                            <div class="action-btn">🗑️</div>
+                                        </div>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </section>
+
+            <!-- About Page -->
+            <section id="about" class="page">
+                <div class="page-header">
+                    <h1 class="page-title">About Student Tracker</h1>
+                    <p class="page-description">Learn more about our application and team</p>
+                </div>
+                
+                <div class="about-container">
+                    <div class="about-section">
+                        <h2 class="about-section-title">Our Mission</h2>
+                        <p>Student Tracker is designed to help students manage their academic workload effectively. Our mission is to reduce stress and improve productivity by providing a simple, intuitive platform for tracking assignments, deadlines, and academic progress.</p>
+                    </div>
+                    
+                    <div class="about-section">
+                        <h2 class="about-section-title">Features</h2>
+                        <ul>
+                            <li>Task and assignment management with priority levels</li>
+                            <li>Calendar view for visualizing deadlines</li>
+                            <li>Progress tracking and statistics</li>
+                            <li>Reminder notifications for upcoming deadlines</li>
+                            <li>User-friendly interface designed specifically for students</li>
+                        </ul>
+                    </div>
+                    
+                    <div class="about-section">
+                        <h2 class="about-section-title">Development Team</h2>
+                        <div class="team-members">
+                            <div class="team-member">
+                                <div class="member-avatar">IZ</div>
+                                <div class="member-name">Iskandar Zulqarnain</div>
+                                <div class="member-role">Lead Developer</div>
+                            </div>
+                            <div class="team-member">
+                                <div class="member-avatar">AF</div>
+                                <div class="member-name">Ahmad Farhan</div>
+                                <div class="member-role">UI/UX Designer</div>
+                            </div>
+                            <div class="team-member">
+                                <div class="member-avatar">SN</div>
+                                <div class="member-name">Siti Nurhaliza</div>
+                                <div class="member-role">Quality Assurance</div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="about-section">
+                        <h2 class="about-section-title">Contact Us</h2>
+                        <p>If you have any questions or feedback, please don't hesitate to reach out to us at <strong>support@studenttracker.edu</strong>.</p>
+                    </div>
+                </div>
+            </section>
+        </div>
+    </main>
+
+    <!-- Footer -->
+    <footer>
+        <div class="container footer-container">
+            <div class="footer-links">
+                <a href="#">Privacy Policy</a>
+                <a href="#">Terms of Service</a>
+                <a href="#">Help Center</a>
+                <a href="#">Contact Us</a>
+            </div>
+            <div class="copyright">
+                &copy; 2025 Student Task and Assignment Tracker. All rights reserved.
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        // Navigation functionality
+        document.addEventListener('DOMContentLoaded', function() {
+            const navLinks = document.querySelectorAll('.nav-link');
+            const pages = document.querySelectorAll('.page');
+            
+            navLinks.forEach(link => {
+                link.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    
+                    // Remove active class from all links and pages
+                    navLinks.forEach(l => l.classList.remove('active'));
+                    pages.forEach(p => p.classList.remove('active'));
+                    
+                    // Add active class to clicked link
+                    this.classList.add('active');
+                    
+                    // Show corresponding page
+                    const pageId = this.getAttribute('data-page');
+                    document.getElementById(pageId).classList.add('active');
+                });
+            });
+            
+            // Task checkbox functionality
+            const taskCheckboxes = document.querySelectorAll('.task-checkbox');
+            taskCheckboxes.forEach(checkbox => {
+                checkbox.addEventListener('click', function() {
+                    this.classList.toggle('checked');
+                    this.innerHTML = this.classList.contains('checked') ? '✓' : '';
+                });
+            });
+            
+            // Filter buttons functionality
+            const filterButtons = document.querySelectorAll('.filter-btn');
+            filterButtons.forEach(button => {
+                button.addEventListener('click', function() {
+                    filterButtons.forEach(btn => btn.classList.remove('active'));
+                    this.classList.add('active');
+                });
+            });
+            
+            // Profile tabs functionality
+            const profileTabs = document.querySelectorAll('.profile-tab');
+            profileTabs.forEach(tab => {
+                tab.addEventListener('click', function() {
+                    profileTabs.forEach(t => t.classList.remove('active'));
+                    this.classList.add('active');
+                });
+            });
+            
+            // Admin nav functionality
+            const adminNavItems = document.querySelectorAll('.admin-nav-item');
+            adminNavItems.forEach(item => {
+                item.addEventListener('click', function() {
+                    adminNavItems.forEach(i => i.classList.remove('active'));
+                    this.classList.add('active');
+                });
+            });
+        });
+    </script>
+	<script>
+document.addEventListener('DOMContentLoaded', () => {
+  const modal = document.getElementById('addTaskModal');
+  const openBtn = document.getElementById('openAddTaskModal');
+  const closeBtn = document.getElementById('closeAddTaskModal');
+  const form = document.getElementById('addTaskForm');
+
+  if (openBtn && modal && form) {
+    openBtn.addEventListener('click', () => modal.style.display = 'flex');
+    closeBtn.addEventListener('click', () => modal.style.display = 'none');
+
+    form.addEventListener('submit', (e) => {
+      e.preventDefault();
+      const formData = new FormData(form);
+
+      fetch('add_task.php', {
+        method: 'POST',
+        body: formData
+      })
+      .then(res => res.text())
+      .then(data => {
+        alert(data);
+        window.location.reload();
+      })
+      .catch(err => alert('Error: ' + err));
+    });
+  }
+});
+</script>
+</body>
+</html>
