@@ -56,6 +56,8 @@ include 'db_connect.php';
             padding: 15px 0;
         }
 
+		
+		
         .logo {
             display: flex;
             align-items: center;
@@ -74,6 +76,26 @@ include 'db_connect.php';
             display: flex;
             align-items: center;
             justify-content: center;
+        }
+		
+		nav ul {
+            display: flex;
+            list-style: none;
+            gap: 25px;
+        }
+        
+        nav a {
+            text-decoration: none;
+            color: var(--dark);
+            font-weight: 500;
+            padding: 8px 12px;
+            border-radius: 6px;
+            transition: all 0.3s ease;
+        }
+        
+        nav a:hover, nav a.active {
+            background-color: var(--light-gray);
+            color: var(--primary);
         }
 
         .user-section {
@@ -195,11 +217,24 @@ include 'db_connect.php';
 </head>
 <body>
     <header>
+		
+		
         <div class="header-container">
             <div class="logo">
                 <div class="logo-icon">ST</div>
                 <span>Student Tracker</span>
             </div>
+			
+		<nav>
+                <ul>
+                    <li><a href="index.php" class="nav-link active" data-page="home">Home</a></li>
+                    <li><a href="dashboard.php" class="nav-link" data-page="dashboard">Dashboard</a></li>
+                   
+                    <li><a href="index.php" class="nav-link" data-page="admin">Admin</a></li>
+                    <li><a href="" class="nav-link" data-page="about">About</a></li>
+                </ul>
+            </nav>
+			
             <div class="user-section">
                 <span>👋 Welcome, <strong><?php echo $_SESSION['fullname']; ?></strong></span>
                 <a href="logout.php"><button class="btn btn-logout">Logout</button></a>

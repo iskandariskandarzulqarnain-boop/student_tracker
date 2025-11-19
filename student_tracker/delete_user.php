@@ -1,17 +1,14 @@
 <?php
 include 'db_connect.php';
 
-if (isset($_GET['id'])) {
-    $id = $_GET['id'];
+$user_id = $_GET['user_id'];
 
-    $sql = "DELETE FROM users WHERE user_id = $id";
+$sql = "DELETE FROM users WHERE user_id=$user_id";
 
-    if ($conn->query($sql)) {
-        echo "<script>alert('User deleted successfully'); window.location='users.php';</script>";
-    } else {
-        echo "Error: " . $conn->error;
-    }
+if ($conn->query($sql)) {
+    header("Location: index.php");
+    exit();
 } else {
-    echo "Invalid ID";
+    echo "Error deleting user: " . $conn->error;
 }
 ?>
